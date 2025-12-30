@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Booking Confirmation</title>
     <link rel="stylesheet" href="done.css">
+    <style>
+        a{
+            text-decoration: none;
+
+        }
+    </style>
 </head>
 <body>
 <div class="container" id="receipt">
@@ -32,43 +38,43 @@
             
             <div class="detail-item">
                 <div class="detail-label">Age</div>
-                <div class="detail-value" id="age">--</div>
+                <div class="detail-value" id="age"></div>
             </div>
             
             <div class="detail-item">
                 <div class="detail-label">Contact</div>
-                <div class="detail-value" id='phone'>0000000000</div>
+                <div class="detail-value" id='phone'></div>
             </div>
             
             <div class="detail-item">
             <div class="detail-label">Email</div>
-                <div class="detail-value" id="email">--</div>
+                <div class="detail-value" id="email"></div>
             </div>
             
             <div class="detail-item">
                 <div class="detail-label">Gender</div>
-                <div class="detail-value" id='gender'>other</div>
+                <div class="detail-value" id='gender'></div>
             </div>
             <div class="detail-item">
                 <div class="detail-label">Date</div>
-                <div class="detail-value" id="date">--</div>
+                <div class="detail-value" id="date"></div>
             </div>
             
             
             <div class="detail-item">
                 <div class="detail-label">Time</div>
-                <div class="detail-value" id="time">14:00</div>
+                <div class="detail-value" id="time"></div>
             </div>
             
             <div class="detail-item">
                 <div class="detail-label">Type</div>
-                <div class="detail-value" id="first">first</div>
+                <div class="detail-value" id="first"></div>
             </div>
             
 
             <div class="detail-item reason-section">
                 <div class="detail-label">Reason for Visit</div>
-                <div class="detail-value" id="reason">i am the forest i am the fire i am watching it burn</div>
+                <div class="detail-value" id="reason"></div>
             </div>
 
             <div class="detail-item">
@@ -118,6 +124,9 @@
             </button>
         </div>
     </div>
+    <script>
+        localStorage.removeItem("doctor");
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
     <script src="done.js"></script>
 </body>

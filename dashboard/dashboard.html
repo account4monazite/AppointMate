@@ -3,100 +3,82 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>patient Dasboard</title>
-        <link rel="stylesheet" href="book_style.css">
- 
+<title>Patient Dashboard</title>
+<link rel="stylesheet" href="book_style.css">
 </head>
 <body>
-      <nav class="navbar">
-        <div class="logo">
-          Patient Dashboard
+<nav class="navbar">
+    <div class="logo">Patient Dashboard</div>
+    <div class="navigation">
+        <div class="btn"><a href="\BookAppt\doctors.html">Book appointment</a></div>
+        <div class="btn"><a href="\BookTests\booktests.html">Book test</a></div>
+        <div class="btn" id="logout">Log out-></div>
+    </div>
+</nav>
+
+<h1 style="padding-left: 32px;">Welcome to AppointMate @ Wings Clinic!</h1>
+
+<section class="features">
+    <div class="cards" >
+        <div class="card red">
+            <div class="iconic"></div>
+            <p class="tip">Upcoming appointments</p>
+            <p class="second-text" id="apptCount"></p>
         </div>
-        <div class="navigation">
-         <!-- <a href="#" style="background-color:blue; color:beige"> Book Appointment</a>
-         <a href="#" style="background-color:blue; color:beige"> Book Test</a>-->
-          <div class="btn"><a href="\BookAppt\doctors.html">Book appointment</a></div>
-          <div class="btn"><a href="/BookTests/book_tests.html">Book test</a></div>
-          <div class="btn"><a href="\Landing\index.html">Logout</a></div>
-          
+        <div class="card blue">
+            <div class="iconic"></div>
+            <p class="tip">Upcoming tests</p>
+            <p class="second-text" id="testCount"></p>
         </div>
-      </nav>
-      
-      
-      <h1 style="padding-left: 32px;">Hello [name here],  Welcome back!</h1>
-      <section class="features">
-          <div class="cards">
-              <div class="card red" id="followCard">
-                  <div class="iconic"></div>
-                  <p class="tip">Upcoming appointments</p>
-        <p class="second-text">2</p>
+        <div class="card green">
+            <div class="iconic"></div>
+            <p class="tip">Current Prescription</p>
+            <p style="text-align:center;">Levipil (500mg)<br>Dose:1-0-1<br></p>
+        </div>
     </div>
-    <div class="card blue" id="followCard">
-        <div class="iconic"></div><br>
-        <p class="tip">Upcoming tests</p>
-        <p class="second-text">2</p>
-    </div>
-            <div class="card green" id="followCard">
-                <div class="iconic"></div>
-                <p class="tip">Current Prescribtion</p>
-                <p style="text-align: center;">Levipil (500mg) <br>
-                Dose:1-0-1<br></p>
-      </div>
-    </div>
-    <br><br>
-</section><div class="check">
-    <div class="change"><a href="#" data-page="book" >Appointment</a></div>
+</section>
+<br><hr><br>
+<div class="check">
+    <div class="change"><a href="#" data-page="book">Appointment</a></div>
     <div class="change"><a href="#" data-page="prescription">Prescription</a></div>
     <div class="change"><a href="#" data-page="tests">Tests</a></div>
-    
 </div>
+
 <div class="book">
 <main id="app">
-<section class="appt_part">
-      <div class="appt" >
-        <div class="doctor-info">
-          <div class="face"></div>
-          <div>
-            <h3>Dr.John Doe</h3>
-            <p style="color:gray">Cardiologist</p>
-            <span style="color:gray">21/03/2026 Time:6:30pm</span>
-          </div>
-          
-    </div>
-    <div class="status pending">pending</div>
-    <div class="type">Follow Up</div>
-  </div>
-  <div class="appt">
-    <div class="doctor-info">
-      <div class="face"></div>
-      <div>
-       <h3>Dr.Jeon Wonwoo</h3>
-       <p style="color:gray">Oncologist</p>
-       <span style="color:gray">26/03/2026 Time:6:30pm</span>
-      </div>
+    <section id="appointmentsContainer" class="appt_part"></section>
+    <section id="prescriptionsContainer" class="appt_part">
       
+    <div class="med-cards">
+        <div class="med-card">
+            <div class="meds">
+                <div class="iconic">🗑</div>
+                <div>
+                    <h3>Levipil</h3>
+                    <p style="color:gray">Dose:1-0-1</p>
+                    <span style="color:gray">Prescribed by: Dr.Heena</span>
+                </div>
+            </div>
+        </div>
+        <div class="med-card">
+            <div class="meds">
+                <div class="iconic">🗑</div>
+                <div>
+                    <h3>ShellCal 500mg</h3>
+                    <p style="color:gray">Dose:1-0-0</p>
+                    <span style="color:gray">Prescribed by: Dr. Saanika</span>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="status upcoming">confirmed</div>
-    <div class="type">Consultation</div>
-  </div>
-  <div class="appt">
-    <div class="doctor-info">
-      <div class="face"></div>
-      <div>
-        <h3>Dr.Boo Suengkwan</h3>
-        <p style="color:gray">Orthopedic</p>
-        <span style="color:gray">21/12/2025 Time:7:00pm</span>
-      </div>
 
-    </div>
-    <div class="status past">Past</div>
-    <div class="type">Follow Up</div>
-  </div>
 
-</section>
+    </section>
+    <section id="testsContainer" class="appt_part"></section>
+
 </main>
 </div>
-<script src="book_magic.js"></script>
-</body>
 
-    </html>
+<script src="dash.js"></script>
+</body>
+</html>

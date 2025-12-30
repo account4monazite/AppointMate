@@ -7,14 +7,14 @@
     <link rel="stylesheet" href="doctors.css">
 </head>
 <body>
-    <a href="/dashboard/dashboard.html" class="back-btn"> <-- Back</a>
+    <a href="/dashboard/dashboard.html" class="back-btn"> ← Back</a>
     <section class="features">
         <h2 style="font-size: 40px;">Book Doctor Appointment</h2>
         <p style="font-size: 20px;">Choose from our expert specialists</p>
 
         <div class="card-container">
             <div class="card">
-                <h3 style="text-align: center;">Dr. John Doe</h3>
+                <h3 style="text-align: center;">Dr. Sanika Patil</h3>
                 <span class="tag">Orthopedic</span>
                 <p style="color: rgb(164, 159, 159);">10+ years experience</p>
                 <p>Available Days</p>
@@ -24,11 +24,11 @@
                     <span class="day">Thurs</span>
                 </div>
                 <p style="padding-bottom: 10px;">Consultation Fee : Rs1500(first time)<br>Rs800(follow-up)</p>
-                <a href="/BookAppt/appointment1.html" class="appt-btn">Book Appointment</a>
+                <button onclick="doc('Dr. Sanika Patil')" class="appt-btn">Book Appointment</button>
             </div>
     
             <div class="card">
-                <h3 style="text-align: center;">Dr. Jane Doe</h3>
+                <h3 style="text-align: center;">Dr. Heena Sharma</h3>
                 <span class="tag">Neurologist</span>
                 <p style="color: rgb(164, 159, 159);">12+ years experience</p>
                 <p>Available Days</p>
@@ -39,11 +39,11 @@
                     <span class="day">Sat</span>
                 </div>
                 <p style="padding-bottom: 10px;">Consultation Fee : Rs1500(first time)<br>Rs800(follow-up)</p>
-                <a href="/BookAppt/appointment2.html" class="appt-btn">Book Appointment</a>
+                <button onclick="doc('Dr. Heena Sharma')" class="appt-btn">Book Appointment</button>
             </div>
     
             <div class="card">
-                <h3 style="text-align: center;">Dr. Jake Doe</h3>
+                <h3 style="text-align: center;">Dr. Chetan Verma</h3>
                 <span class="tag">Oncologist</span>
                 <p style="color: rgb(164, 159, 159);">8+ years experience</p>
                 <p>Available Days</p>
@@ -53,10 +53,21 @@
                     <span class="day">Thurs</span>
                 </div>
                 <p style="padding-bottom: 10px;">Consultation Fee : Rs1500(first time)<br>Rs800(follow-up)</p>
-                <a href="/BookAppt/appointment3.html" class="appt-btn">Book Appointment</a>
+                <button onclick="doc('Dr. Chetan Verma')" class="appt-btn">Book Appointment</a>
             </div>
         </div>
     </section>
+<script>
+  
 
+    
+    function doc(d){
+    localStorage.setItem("doctor",d);
+    window.location.href="/BookAppt/appointment1.html";
+  
+  }
+  
+
+</script>
 </body>
 </html>

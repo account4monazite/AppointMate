@@ -8,35 +8,10 @@
 </head>
 <body>
     <a href="/dashboard/dashboard.html" class="back-btn"> <-- Back </a>
-    <section>
+    <section style="margin-bottom: -10px;">
         <h2 style="font-size: 30px; margin-top: 3%;">Book Diagnostic Tests</h2>
         <p style="color: #928c8c; font-size: 20px;">Advanced diagnostic imaging services</p>
     </section>
-    
-    <section>
-        <div class="rate-card">
-            <h2 style="text-align: left;">ⓘ Rate Card & Important Information</h2>
-            <div class="services">
-              <div class="service">
-                <p>X-Ray</p>
-                <p class="price">Rs. 1000</p>
-              </div>
-              <div class="service">
-                <p>CT Scan</p>
-                <p class="price">Rs. 2000</p>
-              </div>
-              <div class="service">
-                <p>MRI</p>
-                <p class="price">Rs. 3500</p>
-              </div>
-            </div>
-            <p class="txt"> • All tests are conducted by certified radiologists</p>
-            <p class="txt">• Reports available within 24 hours</p>
-            <p class="txt">• Digital copies provided via email</p>
-            <p class="txt">• Please arrive 15 minutes before your scheduled appointment</p>
-        </div>
-    </section>
-
     <section>
         <div class="card-container">
             <div class="card">
@@ -44,7 +19,7 @@
                 <p style="color: #a49f9f;">High-quality digital X-ray imaging for bone and joint examination</p>
                 <div class="services">
                     <div class="service">
-                        <p>$Price</p>
+                        <p>Price</p>
                         <p class="price">Rs. 1000</p>
                     </div>
                     <div class="service">
@@ -58,7 +33,7 @@
                     <span class="prerequisite">Remove metal objects</span>
                     <span class="prerequisite">Wear hospital gown</span>
                 </div>
-                <button class="book-btn">Book X-Ray</button>
+                <button onclick="test('X-Ray')" class="book-btn">Book X-Ray</button>
             </div>
 
             <div class="card">
@@ -66,7 +41,7 @@
                 <p style="color: #a49f9f;">Magnetic Resonance Imaging for detailed soft tissue analysis</p>
                 <div class="services">
                     <div class="service">
-                        <p>$ Price</p>
+                        <p>Price</p>
                         <p class="price">Rs. 3500</p>
                     </div>
                     <div class="service">
@@ -74,14 +49,14 @@
                         <p class="price">30 - 60 minutes</p>
                     </div>
                 </div>
-
+                
                 <p>Prerequisites :</p>
                 <div class="Prerequisites">
                     <span class="prerequisite">No metal implants</span>
                     <span class="prerequisite">Remove jewelry</span>
                     <span class="prerequisite">Inform about claustrophobia</span>
                 </div>
-                <button class="book-btn">Book MRI</button>
+                <button onclick="test('MRI')" class="book-btn">Book MRI Scan</button>
             </div>
 
             <div class="card">
@@ -89,7 +64,7 @@
                 <p style="color: #a49f9f;">Computed Tomography for cross-sectional body imaging</p>
                 <div class="services">
                     <div class="service">
-                        <p></p>Price</p>
+                        <p>Price</p>
                         <p class="price">Rs. 2000</p>
                     </div>
                     <div class="service">
@@ -111,12 +86,27 @@
                     <span class="prerequisite">Remove jewelry</span>
                     <span class="prerequisite">Inform about allergies</span>
                 </div>
-                <button class="book-btn"><a ref="\bookingdone\done_tests.html">Book CT-Scan</a></button>
+                <button onclick="test('CT Scan')" class="book-btn">Book CT-Scan</button>
             </div>
 
         </div>
     </section>
-
+    <div style="margin-bottom: 20px;"></div>
+    <section>
+        <div class="rate-card">
+            <h2 style="text-align: left;">Important Information</h2>
+            <p class="txt">• All tests are conducted by certified radiologists</p>
+            <p class="txt">• Reports available within 24 hours</p>
+            <p class="txt">• Digital copies provided via email</p>
+            <p class="txt">• Please arrive 15 minutes before your scheduled appointment</p>
+        </div>
+    </section>
+<script>
+    function test(t){
+        localStorage.setItem("Test",t);
+        window.location.href="/BookTests/form.html";
+    }
+</script>
 </body>
 </html>
 

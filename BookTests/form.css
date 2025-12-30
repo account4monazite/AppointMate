@@ -1,0 +1,126 @@
+body {
+  background-color: #cbf9e0;
+  text-align: left;
+  padding-left: 100px;
+  padding-top: 50px;
+  padding-right: 50px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.back-btn {
+  background-color: #00a6ff;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  font-size: 20px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.card-container {
+  display: flex;
+  justify-content: center;
+  gap: 70px;
+  flex-wrap: wrap;
+  margin-top: 70px;
+}
+
+.card {
+  background-color: white;
+  padding: 10px 30px;
+  width: 800px;
+  height: 1000px;
+  border-radius: 20px;
+  box-shadow: 0 0 10px rgb(161, 159, 159);
+}
+
+.card h3 {
+  font-size: 22px;
+  font-weight: lighter;
+}
+
+.forms {
+  font-size: 18px;
+}
+
+  .card p {
+    font-size: 16px;
+    color: rgb(133, 131, 129);
+  }
+.form-row {
+  display: flex;
+  gap: 50px;
+  margin-bottom: 15px;
+}
+
+.form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.forms label {
+  margin-bottom: 10px;
+  display: block;
+}
+
+.dropdown {
+  width: 100%;
+  height: 35px;
+  font-size: 15px;
+  padding: 5px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  color: #555;
+}
+
+#prerequisites {
+  background: #e7e4e4;
+  padding: 10px 15px;
+  border-radius: 10px;
+  color: rgb(119, 114, 114);
+}
+
+.checkbox-section {
+  margin: 15px 0;
+}
+input{
+    padding: 8px; 
+    border-radius: 5px; 
+    border: 1px solid #ccc;
+  }
+.form-buttons {
+  display: flex;
+  justify-content: center;  
+  gap: 50px;                
+  margin-top: 40px;
+}
+
+.btn {
+  display: inline-block;
+  padding: 12px 30px;
+  border-radius: 8px;
+  text-decoration: none;    
+  
+  cursor: pointer;
+  text-align: center;
+  width: 120px;        
+}
+
+.cancel-btn {
+  background-color: #ccc;
+  color: #000;
+}
+
+.cancel-btn:hover {
+  background-color: #999;
+}
+
+.submit-btn {
+  background-color: #007bff;
+  color: #fff;
+}
+.submit-btn:hover {
+  background-color: #0056b3;
+  }

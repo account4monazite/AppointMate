@@ -11,11 +11,11 @@
   <section>
     <div class="card-container">
       <div class="card">
-        <h2>Book Appointment with Dr. John Doe</h2>
-        <p>Orthopedic | Consultation Fee : ₹1000 | Follow-up Fee : ₹700</p>
+        <h2 id="doc-name"></h2>
+        <p id ="info"></p>
 
         <h3>Patient Information</h3>
-        <form class="forms">
+        <form class="forms" action="/bookingdone/done_appt.html" method="get" onsubmit="handleFormSubmit()">
           <div class="form-row">
             <div class="form-group">
               <label for="name">Full Name *</label>
@@ -135,6 +135,27 @@
       </div>
     </div>
   </section>
+  <script>
+    
+    const doc=localStorage.getItem("doctor");
+    if (doc){
+      const box=document.getElementById("doc-name");
+      box.innerText="Book Appointment with "+ doc.toUpperCase();
+      if(doc=='Dr. Sanika Patil'){
+      const inf=document.getElementById("info");
+      inf.innerText="Orthopedic | Consultation Fee : ₹1500 | Follow-up Fee : ₹800";
+    }
+    else if(doc=='Dr. Heena Sharma'){
+      const inf=document.getElementById('info');
+      inf.innerText="Neurologist | Consultation Fee : ₹1500 | Follow-up Fees : ₹800";
+    }
+    else if (doc=='Dr. Chetan Verma'){
+      const inf=document.getElementById('info');
+      inf.innerText="Oncologist | Consultation Fee : ₹1500 | Follow-up Fees : ₹800";
+    }
+    }
+    
+  </script>
   <script src="/BookAppt/form_appt.js"></script>
 </body>
 </html>

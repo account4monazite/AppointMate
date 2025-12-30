@@ -8,19 +8,27 @@
     
 </head>
 <body>
+<button onclick="main()" id="back">
+    ← Back
+</button>
 <main>
 <h1>Log In</h1>
 <div class="elevated-box">
-    <div class="form">
-        <form>
+
+    <div id="error">
+        <p id="login-error">
+            Invalid Email <span id="error2">and/or password</span>
+        </p>
+    </div>
+    <div class="log-form"  method="POST">
+        <form id="form">
             <label for="email"><b>Email</b></label><br>
-            <input type="text"  placeholder="Enter Email" name="email" required
-            pattern="[a-z0-9._]+@[a-z0-9]+\.[a-z]{2,}$">
-            <p></p>
+            <input type="text" id="email" placeholder="Enter Email" name="email" required
+            pattern="[a-z0-9._]+@[a-z0-9]+\.[a-z]{2,}$"><br>
             <label for="psw"><b>Password</b></label><br>
-            <input type="password" placeholder="Enter Password" name="psw" required>
+            <input type="password" id="pass"placeholder="Enter Password" name="pass" required>
             <p style="font-size: 10px;"><a href="#">Forget Password?</a></p>
-            <button type="submit" class="login" onclick="window.location.href='/dashboard/dashboard.html'">Log In</button>
+            <button type="submit" class="gib" id ="sub">Log In</button>
             <p style="font-size: 14px;margin-bottom: -10px;"><a href="SIgn-up.html">New to AppointMate? Sign Up now!</a></p>
 
         </form>
@@ -29,59 +37,12 @@
         <img src="sign_in_w_google.png" alt="google" style="cursor:pointer;height:60px;width:300px;">
 </div>
 </main>
-<script type="text/javascript">
-        function login() 
-        {
-          var myParams = {
-            'clientid' : 'YOUR_CLIENT_ID.apps.googleusercontent.com',
-            'cookiepolicy' : 'single_host_origin',
-            'callback' : 'loginCallback',
-            'approvalprompt':'force',
-            'scope' : 'https://www.googleapis.com/auth/plus.login https://www.googleapis.com/auth/plus.profile.emails.read'
-          };
-          gapi.auth.signIn(myParams);
-        }
-
-        function loginCallback(result)
-        {
-            if(result['status']['signed_in'])
-            {
-                var request = gapi.client.plus.people.get(
-                {
-                    'userId': 'me'
-                });
-                request.execute(function (resp)
-                {
-                    
-                    var email = '';
-                    if(resp['emails'])
-                    {
-                        for(i = 0; i < resp['emails'].length; i++)
-                        {
-                            if(resp['emails'][i]['type'] == 'account')
-                            {
-                                email = resp['emails'][i]['value'];
-                            }
-                        }
-                    }
-                   var usersname = resp['displayName'];
-                });
-            }
-        }
-        function onLoadCallback()
-        {
-            gapi.client.setApiKey('YOUR_API_KEY');
-            gapi.client.load('plus', 'v1',function(){});
-        }
-
-            </script>
-
-        <script type="text/javascript">
-              (function() {
-               var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
-               po.src = 'https://apis.google.com/js/client.js?onload=onLoadCallback';
-               var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
-             })();
-        </script>  
+<script src="log_sign.js"></script>
+<script>
+    function main(){
+        window.location.href="/Landing/index.html";
+    }
+</script>
+          
 </body>
 </html>
