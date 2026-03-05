@@ -108,7 +108,6 @@ class Prescription(Base):
     appt_id = Column(Integer, ForeignKey("appointment_test.appt_id"))
 
     appointment = relationship("AppointmentTest", back_populates="prescriptions")
-
     medications = relationship("PrescriptionMedication", back_populates="prescription")
     dosages = relationship("PrescriptionDosage", back_populates="prescription")
 

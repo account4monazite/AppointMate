@@ -1,6 +1,6 @@
 from enum import Enum
 from datetime import datetime
-from typing import Optional
+from typing import Optional,List
 from pydantic import EmailStr, BaseModel
 class UserRole(str, Enum):
     doctor = "doctor"
@@ -53,3 +53,36 @@ class AppointmentResponse(BaseModel):
         from_attributes = True
 class AppointmentUpdate(BaseModel):
     status: AppointmentStatus
+
+class Tests(str,Enum):
+    CT='CT'
+    MRI='MRI'
+    XRAY='XRAY'
+    none='none'
+    
+class AppointmentResponse(BaseModel):
+    appt_id:int
+    date_time:datetime
+    doc_name:str
+    test_type:Tests
+    class Config:
+        from_attributes=True
+
+class PrescriptionItemResponse(BaseModel):
+    medication: str
+    dose: str
+
+class PrescriptionResponse(BaseModel):
+    appt_id: int
+    items: List[PrescriptionItemResponse]
+
+class DashboardResponse(BaseModel):
+    current_appointments:List[AppointmentResponse]
+    number_current_appts:int
+   # total_appointments:List[AppointmentResponse]
+    current_tests:List[AppointmentResponse]
+    number_current_tests:int
+   # total_tests:List[AppointmentResponse]
+    prescription: List[PrescriptionResponse] |None
+    
+    
