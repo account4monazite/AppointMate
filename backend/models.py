@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Date, Enum, ForeignKey, TIMESTAMP
+from sqlalchemy import Column, Integer, String, DateTime, Date, Enum, ForeignKey, TIMESTAMP,UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database import Base
@@ -89,7 +89,7 @@ class AppointmentTest(Base):
     appt_id = Column(Integer, primary_key=True, index=True)
     date_time = Column(DateTime)
     test_type = Column(Enum(TestTypeEnum))
-    status = Column(Enum(AppointmentStatus))
+    status = Column(Enum(AppointmentStatus),default='Scheduled')
 
     doc_id = Column(Integer, ForeignKey("doctor.doc_id"))
     patient_id = Column(Integer, ForeignKey("patient.patient_id"))
@@ -98,6 +98,7 @@ class AppointmentTest(Base):
     updated_at = Column(DateTime)
 
     prescriptions = relationship("Prescription", back_populates="appointment")
+    __table_args__=(UniqueConstraint('date_time','doc_id',name='unique_time_slot'),)
 
 class Prescription(Base):
     __tablename__ = "prescription"
