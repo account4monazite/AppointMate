@@ -7,7 +7,6 @@ import models
 from schemas.appointment import AppointmentRequest,AppointmentUpdate
 
 
-router=APIRouter()
 @router.post("/bookAppointment/{doc_id}")
 async def book_appt(doc_id: int, data:AppointmentRequest,db:Session=Depends(get_db)):
     now=datetime.datetime.now()
