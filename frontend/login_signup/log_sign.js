@@ -28,7 +28,7 @@ if (sign_form) {
 
     if (users.some(u => u.email === val_email)) {
       alert("Email already registered!");
-      window.location.href = "login_signup/Log-in.html";
+      window.location.href = "Log-in.html";
       return;
     }
 // let meds=["Levipil 500 mg 1-0-1","Shellcal 0-0-1","CERTIcan 0.25mg post dinner"]
@@ -36,7 +36,7 @@ if (sign_form) {
     localStorage.setItem("users", JSON.stringify(users));
 
     alert("Sign up successful!");
-   window.location.href = "/login_signup/Log-in.html";
+   window.location.href = "Log-in.html";
 
     console.log("sign up done");
 });
@@ -59,7 +59,7 @@ if (loginForm) {
     if (user_check) {
       alert("Login Successful!");
       localStorage.setItem("currentUser", user);
-      window.location.href = "/dashboard/dashboard.html";
+      window.location.href = "../dashboard/dashboard.html";
     } else {
       loginerror.style.opacity = 1;
     }
