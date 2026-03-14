@@ -11,5 +11,5 @@ app=FastAPI(
 )
 
 app.include_router(router,prefix=f"/api/{version}/dashboard",tags=['doctor'])
-app.include_router(routes.appointments.router,prefix=f"/api/{version}/",tags=['crud'])
-app.include_router(routes.login_signup.router,prefix=f"/api/{version}/")
+app.include_router(routes.appointments.router,prefix=f"/api/{version}",tags=['crud'])
+app.include_router(routes.login_signup.router,prefix=f"/api/{version}")
