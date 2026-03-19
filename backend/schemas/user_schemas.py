@@ -1,6 +1,7 @@
 from enum import Enum
 from datetime import datetime
-from typing import Optional,List
+from typing import Optional
+from models import GenderEnum
 from pydantic import EmailStr, BaseModel
 class UserRole(str, Enum):
     doctor = "doctor"
@@ -29,4 +30,9 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     id: Optional[int] = None
     role: Optional[UserRole] = None
-#enum('Scheduled','Completed','Cancelled','No_Show')
+
+class PatientCreate(BaseModel):
+    pat_name: str
+    dob: datetime
+    gender: GenderEnum
+    contact: str

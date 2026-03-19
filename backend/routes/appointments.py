@@ -84,7 +84,7 @@ async def book_appt(doc_id:int,
     test_type = test_type.strip("'\"")
     appointment=models.AppointmentTest(**data.model_dump(),
        doc_id=doc_id,
-       patient=patient.patient_id,                               
+       patient_id=patient.patient_id,                               
        test_type=test_type,
         created_at=now, updated_at=now)
     db.add(appointment)
@@ -231,7 +231,7 @@ async def delete_appts(appt_id:int,
             status_code=400,
             detail="Cannot cancel appointment within 24 hours"
         ) 
-    appt.status="cancelled"
+    appt.status=models.AppointmentStatus.Cancelled
     appt.updated_at=now     
     db.commit()
     db.refresh(appt)
@@ -264,8 +264,29 @@ async def delete_tests(appt_id:int,db:Session=Depends(get_db),current_user=Depen
             status_code=400,
             detail="Cannot cancel Test within 24 hours"
         )        
-    appt.status="cancelled"
+    appt.status=models.AppointmentStatus.Cancelled
     appt.updated_at=now     
     db.commit()
     db.refresh(appt)
-    return{"Message":"Test cancelled"}                                           
+    return{"Message":"Test cancelled"}         
+
+@router.get("/history")
+async def get_history(
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    patient = db.query(models.Patient).filter(
+        models.Patient.user_id == current_user.user_id
+    ).first()
+
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found")
+
+    now = datetime.now()
+
+    past_appts = db.query(models.AppointmentTest).filter(
+        models.AppointmentTest.patient_id == patient.patient_id,
+        models.AppointmentTest.date_time < now
+    ).order_by(models.AppointmentTest.date_time.desc()).all()
+
+    return past_appts                                  
