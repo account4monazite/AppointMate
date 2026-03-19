@@ -107,10 +107,10 @@ function downloadReceipt() {
 
 function bookAnother() {
     sessionStorage.removeItem('appointmentData');
-    window.location.href = '/BookTests/booktests.html';
+    window.location.href = '../BookTests/booktests.html';
 }
 
 function goHome() {
     sessionStorage.removeItem('appointmentData');
-    window.location.href = '/dashboard/dashboard.html';
+    window.location.href = '../dashboard/dashboard.html';
 }

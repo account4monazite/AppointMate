@@ -4,11 +4,12 @@ from models import AppointmentTest,Doctor,Prescription
 import datetime
 from sqlalchemy.orm import Session
 from database import get_db
+from auth.jwt_auth import get_current_user
 
 router=APIRouter()
 
 @router.get("/dashboard",response_model=DashboardResponse)
-async def get_dashboard(db: Session = Depends(get_db)):
+async def get_dashboard(db: Session = Depends(get_db),curreent_user=Depends(get_current_user)):
     now = datetime.datetime.now()
 
     appt_query = (

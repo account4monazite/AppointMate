@@ -36,7 +36,6 @@ document.querySelector('.forms').addEventListener('submit', function (e) {
   const gender = document.getElementById('gender').value;
   const reason = document.getElementById('reason').value.trim();
 
-  // Check if all required fields are filled
   if (!name || !age || !phone || !email || !date || !time || !reason) {
     alert('Please fill in all required fields.');
     return;
@@ -47,14 +46,12 @@ document.querySelector('.forms').addEventListener('submit', function (e) {
     return;
   }
 
-  // Email validation
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     alert('Please enter a valid email address.');
     return;
   }
 
-  console.log('Validation passed'); // Debug log
 
   const formData = {
     name: name,
@@ -108,12 +105,10 @@ document.querySelector('.forms').addEventListener('submit', function (e) {
   
   sessionStorage.setItem('appointmentData', JSON.stringify(formData));
 
-  console.log('Data stored successfully'); // Debug log
   console.log('Stored data:', sessionStorage.getItem('appointmentData'));
 
   alert("Test appointment booked successfully!");
   
-  console.log('About to redirect to: /bookingdone/done_tests.html'); // Debug log
   
-  window.location = "/bookingdone/done_tests.html";
+  window.location = "../bookingdone/done_tests.html";
 });
