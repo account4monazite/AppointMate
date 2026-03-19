@@ -9,7 +9,7 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     role: UserRole
-    phone: str
+    
 
 class UserLogin(BaseModel):
     email: EmailStr
