@@ -9,9 +9,6 @@ class AppointmentStatus(str,Enum):
     Completed="Completed"
     No_Show="No_Show"
 
-class AppointmentUpdate(BaseModel):
-    status: AppointmentStatus
-
 class Tests(str,Enum):
     CT='CT'
     MRI='MRI'
@@ -59,5 +56,6 @@ class TestRequest(BaseModel):
     test_type:Tests
 
 class AppointmentUpdate(BaseModel):
+    doc_id:int
     date_time:datetime
     

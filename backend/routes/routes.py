@@ -1,6 +1,6 @@
 from schemas.appointment import DashboardResponse
-from fastapi import APIRouter,Depends
-from models import AppointmentTest,Doctor,Prescription
+from fastapi import APIRouter,Depends,HTTPException
+from models import AppointmentTest,Doctor,Prescription,Patient
 import datetime
 from sqlalchemy.orm import Session
 from database import get_db
@@ -9,13 +9,20 @@ from auth.jwt_auth import get_current_user
 router=APIRouter()
 
 @router.get("/dashboard",response_model=DashboardResponse)
-async def get_dashboard(db: Session = Depends(get_db),curreent_user=Depends(get_current_user)):
+async def get_dashboard(db: Session = Depends(get_db),current_user=Depends(get_current_user)):
     now = datetime.datetime.now()
-
+    patient=db.query(Patient).filter(
+        Patient.user_id==current_user.user_id
+        ).first()
+    
+    if not patient:
+        raise HTTPException(status_code=404,detail="patient not found")
+    
     appt_query = (
         db.query(AppointmentTest, Doctor.doc_name)
         .join(Doctor, AppointmentTest.doc_id == Doctor.doc_id)
         .filter(
+            AppointmentTest.patient_id == patient.patient_id,
             AppointmentTest.date_time >= now,
             AppointmentTest.test_type == "none",
             AppointmentTest.status == "Scheduled",
@@ -27,6 +34,7 @@ async def get_dashboard(db: Session = Depends(get_db),curreent_user=Depends(get_
         db.query(AppointmentTest, Doctor.doc_name)
         .join(Doctor, AppointmentTest.doc_id == Doctor.doc_id)
         .filter(
+            AppointmentTest.patient_id == patient.patient_id,
             AppointmentTest.date_time >= now,
             AppointmentTest.test_type != "none",
             AppointmentTest.status == "Scheduled",
@@ -34,7 +42,7 @@ async def get_dashboard(db: Session = Depends(get_db),curreent_user=Depends(get_
     )
     num_tests = test_query.count()
     tests = test_query.all()
-    prescription_objs = db.query(Prescription).all()
+    prescription_objs = db.query(Prescription).join(AppointmentTest, Prescription.appt_id == AppointmentTest.appt_id).filter(AppointmentTest.patient_id == patient.patient_id).all()
     prescription_list = []
     for p in prescription_objs:
         items = []

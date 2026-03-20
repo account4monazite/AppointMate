@@ -36,9 +36,7 @@ async def book_appt(
     now = datetime.now()
 
     appointment = models.AppointmentTest(
-        **data.model_dump(),
-        doc_id=doc_id,
-        patient_id=patient.patient_id,
+        **data.model_dump(exclude={"test_type"}),
         test_type="none",
         created_at=now,
         updated_at=now
@@ -60,7 +58,7 @@ async def book_appt(
     return appointment
 
 @router.post("/bookTest/{doc_id}")
-async def book_appt(doc_id:int,
+async def book_test(doc_id:int,
         test_type:str, 
         data:AppointmentRequest,
         db:Session=Depends(get_db),
@@ -83,10 +81,7 @@ async def book_appt(doc_id:int,
     now = datetime.now()
     test_type = test_type.strip("'\"")
     appointment=models.AppointmentTest(**data.model_dump(),
-       doc_id=doc_id,
-       patient_id=patient.patient_id,                               
-       test_type=test_type,
-        created_at=now, updated_at=now)
+    created_at=now, updated_at=now)
     db.add(appointment)
     try: db.commit()
     except IntegrityError:
@@ -95,7 +90,7 @@ async def book_appt(doc_id:int,
             status_code=400,
             detail="Time slot already booked"
         )       
-    return appointment
+    return {"message":"Test booked Successfully"}
 
 @router.patch("/appointment/{appt_id}")
 async def update_appts(
@@ -130,14 +125,12 @@ async def update_appts(
             detail="Cannot update appointment within 24 hours"
         )
 
-    # check new slot availability
     date = data.date_time.date()
     available_slots = calculate_available_slots(data.doc_id, date, db)
 
     if data.date_time not in available_slots:
         raise HTTPException(status_code=400, detail="Slot not available")
 
-    # update appointment
     appt.doc_id = data.doc_id
     appt.date_time = data.date_time
     appt.updated_at = now
@@ -156,7 +149,7 @@ async def update_appts(
     return {"message": "Appointment updated successfully"}
 
 @router.patch("/update_test/{appt_id}")
-async def update_tests(appt_id:int,date_time:datetime,data:AppointmentUpdate,db:Session=Depends(get_db),current_user=Depends(get_current_user)):
+async def update_tests(appt_id:int,data:AppointmentUpdate,db:Session=Depends(get_db),current_user=Depends(get_current_user)):
     
     patient = db.query(models.Patient).filter(
         models.Patient.user_id == current_user.user_id
@@ -285,8 +278,7 @@ async def get_history(
     now = datetime.now()
 
     past_appts = db.query(models.AppointmentTest).filter(
-        models.AppointmentTest.patient_id == patient.patient_id,
-        models.AppointmentTest.date_time < now
+        models.AppointmentTest.patient_id == patient.patient_id
     ).order_by(models.AppointmentTest.date_time.desc()).all()
 
     return past_appts                                  
