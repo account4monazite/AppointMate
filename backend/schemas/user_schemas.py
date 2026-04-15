@@ -9,7 +9,8 @@ class UserRole(str, Enum):
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
-    role: UserRole
+    role: UserRole = UserRole.patient
+    
     
 
 class UserLogin(BaseModel):
@@ -36,3 +37,14 @@ class PatientCreate(BaseModel):
     dob: datetime
     gender: GenderEnum
     contact: str
+
+class PatientResponse(BaseModel):
+    patient_id: int
+    pat_name: str
+    dob: datetime
+    gender: GenderEnum
+    contact: str
+    user_id: int
+
+    class Config:
+        from_attributes = True

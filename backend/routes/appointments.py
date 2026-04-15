@@ -35,8 +35,11 @@ async def book_appt(
 
     now = datetime.now()
 
+    appt_data = data.model_dump(exclude={"test_type"})
+    appt_data["patient_id"] = patient.patient_id
+    
     appointment = models.AppointmentTest(
-        **data.model_dump(exclude={"test_type"}),
+        **appt_data,
         test_type="none",
         created_at=now,
         updated_at=now
@@ -80,7 +83,10 @@ async def book_test(doc_id:int,
 
     now = datetime.now()
     test_type = test_type.strip("'\"")
-    appointment=models.AppointmentTest(**data.model_dump(),
+    test_data = data.model_dump()
+    test_data["patient_id"] = patient.patient_id
+    
+    appointment=models.AppointmentTest(**test_data,
     created_at=now, updated_at=now)
     db.add(appointment)
     try: db.commit()

@@ -21,7 +21,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(router,prefix=f"/api/{version}/dashboard",tags=['doctor'])
+app.include_router(router,prefix=f"/api/{version}/dashboard",tags=['dashboard'])
 app.include_router(routes.appointments.router,prefix=f"/api/{version}",tags=['crud'])
-app.include_router(routes.login_signup.router,prefix=f"/api/{version}")
+app.include_router(routes.login_signup.router,prefix=f"/api/{version}",tags=['Login'])
 app.include_router(routes.patient.router,prefix=f"/api/{version}")

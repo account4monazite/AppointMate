@@ -1,6 +1,6 @@
 from enum import Enum
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel
 
 class AppointmentStatus(str,Enum):
@@ -44,14 +44,14 @@ class DashboardResponse(BaseModel):
 
 class AppointmentRequest(BaseModel):
     doc_id:int
-    patient_id:int
+    patient_id:Optional[int] = None
     date_time:datetime
     test_type:Tests
     
 
 class TestRequest(BaseModel):
     doc_id:int
-    patient_id:int
+    patient_id:Optional[int] = None
     date_time:datetime
     test_type:Tests
 
