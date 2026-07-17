@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - AppointMate</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="logo">Appoint<span>Mate</span></a>
+        <div class="nav-links">
+            <span style="font-weight: 600; color: var(--primary-text);">Admin Portal</span>
+            <button onclick="logout()" class="btn btn-outline">Logout</button>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="dashboard-header mt-4">
+            <div>
+                <h1>Admin Command Dashboard</h1>
+                <p class="text-muted">Manage system users, medical practitioners and clinic settings</p>
+            </div>
+            <div>
+                <button onclick="openModal()" class="btn btn-primary">+ Add New Doctor</button>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">⚕️</div>
+                <div class="stat-info">
+                    <h4>Active Doctors Registered</h4>
+                    <p id="doctorCount">0</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="data-table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Doctor ID</th>
+                        <th>Doctor Name</th>
+                        <th>Specialization</th>
+                        <th>Contact Number</th>
+                        <th>Assigned Email</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="doctorsList">
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">Loading doctors...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add Doctor Modal -->
+    <div class="modal" id="addDoctorModal">
+        <div class="modal-content card">
+            <div class="modal-header">
+                <h2 style="font-size: 1.5rem;">Add New Doctor Account</h2>
+                <button onclick="closeModal()" class="modal-close">×</button>
+            </div>
+
+            <div class="alert alert-danger" id="modalError"></div>
+            <div class="alert alert-success" id="modalSuccess"></div>
+
+            <form id="addDoctorForm">
+                <div class="form-group">
+                    <label for="docName">Full Name *</label>
+                    <input type="text" id="docName" class="form-control" placeholder="Dr. First Last" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="docSpec">Specialization *</label>
+                    <input type="text" id="docSpec" class="form-control" placeholder="e.g. Neurologist, Orthopedics" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="docContact">Contact Number *</label>
+                    <input type="tel" id="docContact" class="form-control" placeholder="e.g. 9876543210" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="docEmail">Email Address *</label>
+                    <input type="email" id="docEmail" class="form-control" placeholder="doctor@hospital.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="docPassword">Account Password *</label>
+                    <input type="password" id="docPassword" class="form-control" placeholder="Enter secure password" minlength="6" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 mt-4" id="submitBtn">Create Doctor Account</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+        const role = localStorage.getItem("role") || sessionStorage.getItem("role");
+
+        if (!token || role !== "admin") {
+            logout();
+        }
+
+        function logout() {
+            localStorage.removeItem("token");
+            localStorage.removeItem("role");
+            sessionStorage.removeItem("token");
+            sessionStorage.removeItem("role");
+            window.location.href = "login.html";
+        }
+
+        function openModal() {
+            document.getElementById("addDoctorModal").classList.add("active");
+            document.getElementById("modalError").style.display = "none";
+            document.getElementById("modalSuccess").style.display = "none";
+        }
+
+        function closeModal() {
+            document.getElementById("addDoctorModal").classList.remove("active");
+            document.getElementById("addDoctorForm").reset();
+        }
+
+        async function fetchDoctors() {
+            const list = document.getElementById("doctorsList");
+            try {
+                const response = await fetch("/api/v1/admin/doctors", {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                
+                if (!response.ok) throw new Error("Could not load doctor registry.");
+                const data = await response.json();
+                
+                document.getElementById("doctorCount").innerText = data.length;
+
+                list.innerHTML = "";
+                if (data.length === 0) {
+                    list.innerHTML = `<tr><td colspan="6" class="text-center text-muted">No doctors found. Click 'Add New Doctor' to register one.</td></tr>`;
+                    return;
+                }
+
+                data.forEach(d => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>#${d.doc_id}</td>
+                        <td style="font-weight:600;">${d.doc_name}</td>
+                        <td><span class="badge badge-scheduled">${d.specialization}</span></td>
+                        <td>${d.contact}</td>
+                        <td>${d.email || "No Account"}</td>
+                        <td>
+                            <button onclick="removeDoctor(${d.doc_id})" class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                                Delete
+                            </button>
+                        </td>
+                    `;
+                    list.appendChild(tr);
+                });
+
+            } catch (err) {
+                console.error(err);
+                list.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Error loading doctor list.</td></tr>`;
+            }
+        }
+
+        async function removeDoctor(docId) {
+            if (!confirm("Are you sure you want to permanently delete this doctor? This will remove their doctor profile and user account.")) return;
+
+            try {
+                const response = await fetch(`/api/v1/admin/doctors/${docId}`, {
+                    method: "DELETE",
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
+                if (!response.ok) throw new Error("Failed to delete doctor.");
+                alert("Doctor deleted successfully.");
+                fetchDoctors();
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        document.getElementById("addDoctorForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            const errorDiv = document.getElementById("modalError");
+            const successDiv = document.getElementById("modalSuccess");
+            const submitBtn = document.getElementById("submitBtn");
+
+            errorDiv.style.display = "none";
+            successDiv.style.display = "none";
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Creating account...";
+
+            const docName = document.getElementById("docName").value.trim();
+            const docSpec = document.getElementById("docSpec").value.trim();
+            const docContact = document.getElementById("docContact").value.trim();
+            const docEmail = document.getElementById("docEmail").value.trim();
+            const docPassword = document.getElementById("docPassword").value;
+
+            try {
+                const response = await fetch("/api/v1/admin/doctors", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        email: docEmail,
+                        password: docPassword,
+                        doc_name: docName,
+                        specialization: docSpec,
+                        contact: docContact
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || "Could not register doctor.");
+                }
+
+                successDiv.innerText = "Doctor registered successfully!";
+                successDiv.style.display = "block";
+
+                setTimeout(() => {
+                    closeModal();
+                    fetchDoctors();
+                }, 1200);
+
+            } catch (err) {
+                errorDiv.innerText = err.message;
+                errorDiv.style.display = "block";
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Create Doctor Account";
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", fetchDoctors);
+    </script>
+</body>
+</html>

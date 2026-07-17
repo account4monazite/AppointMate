@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
-import models
+from models import Patient,UserRole
 from schemas.user_schemas import PatientCreate, PatientResponse
 from auth.jwt_auth import get_current_user
 
@@ -14,21 +14,22 @@ async def create_patient_profile(
     current_user = Depends(get_current_user)
 ):
 
-    existing = db.query(models.Patient).filter(
-        models.Patient.user_id == current_user.user_id
+    existing = db.query(Patient).filter(
+        Patient.user_id == current_user.user_id
     ).first()
 
     if existing:
         raise HTTPException(status_code=400, detail="Profile already exists")
 
-    if current_user.role not in (models.UserRole.patient, "patient"):
+    if current_user.role not in (UserRole.patient, "patient"):
         raise HTTPException(status_code=403, detail=f"Not authorized. Your role: {current_user.role}")
 
-    patient = models.Patient(
+    patient = Patient(
         pat_name=data.pat_name,
         dob=data.dob,
         gender=data.gender,
         contact=data.contact,
+        allergies=data.allergies,
         user_id=current_user.user_id
     )
     db.add(patient)
@@ -42,8 +43,8 @@ async def get_patient_profile(
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
-    patient = db.query(models.Patient).filter(
-        models.Patient.user_id == current_user.user_id
+    patient = db.query(Patient).filter(
+        Patient.user_id == current_user.user_id
     ).first()
 
     if not patient:
@@ -57,8 +58,8 @@ async def update_patient_profile(
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
-    patient = db.query(models.Patient).filter(
-        models.Patient.user_id == current_user.user_id
+    patient = db.query(Patient).filter(
+        Patient.user_id == current_user.user_id
     ).first()
 
     if not patient:
@@ -68,8 +69,9 @@ async def update_patient_profile(
     patient.dob = data.dob
     patient.gender = data.gender
     patient.contact = data.contact
+    patient.allergies = data.allergies
 
     db.commit()
     db.refresh(patient)
 
-    return {"message": "Profile updated successfully"}
+    return {"message": "Profile updated successfully"}

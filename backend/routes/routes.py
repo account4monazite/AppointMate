@@ -51,8 +51,8 @@ async def get_dashboard(db: Session = Depends(get_db),current_user=Depends(get_c
         prescription_list.append({"appt_id": p.appt_id, "items": items})
 
     def _appt_to_dict(a_tuple):
-        if isinstance(a_tuple, tuple):
-            appt, doc_name = a_tuple
+        if isinstance(a_tuple, tuple) or (hasattr(a_tuple, '__len__') and len(a_tuple) == 2):
+            appt, doc_name = a_tuple[0], a_tuple[1]
         else:
             appt, doc_name = a_tuple, None
         return {
@@ -60,6 +60,7 @@ async def get_dashboard(db: Session = Depends(get_db),current_user=Depends(get_c
             "date_time": appt.date_time,
             "doc_name": doc_name,
             "test_type": appt.test_type,
+            "reason": appt.reason,
         }
 
     return {

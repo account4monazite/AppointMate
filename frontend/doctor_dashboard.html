@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard - AppointMate</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="logo">Appoint<span>Mate</span></a>
+        <div class="nav-links">
+            <span style="font-weight: 600; color: var(--primary-text);" id="doctorNameLabel">Doctor Portal</span>
+            <button onclick="logout()" class="btn btn-outline">Logout</button>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="dashboard-header mt-4">
+            <div>
+                <h1>Doctor Appointments Queue</h1>
+                <p class="text-muted">Manage scheduled doctor consultations and diagnostics</p>
+            </div>
+            <div>
+                <button onclick="fetchAppointments()" class="btn btn-secondary">🔄 Refresh Queue</button>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📋</div>
+                <div class="stat-info">
+                    <h4>Total Active Appointments</h4>
+                    <p id="queueCount">0</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="data-table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Patient Name</th>
+                        <th>Age / Gender</th>
+                        <th>Contact / Email</th>
+                        <th>Allergies</th>
+                        <th>Schedule</th>
+                        <th>Type / Reason</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="queueList">
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">Loading appointments...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+        const role = localStorage.getItem("role") || sessionStorage.getItem("role");
+
+        if (!token || role !== "doctor") {
+            logout();
+        }
+
+        function logout() {
+            localStorage.removeItem("token");
+            localStorage.removeItem("role");
+            sessionStorage.removeItem("token");
+            sessionStorage.removeItem("role");
+            window.location.href = "login.html";
+        }
+
+        function calculateAge(dobIso) {
+            const birthDate = new Date(dobIso);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            return age;
+        }
+
+        function formatDateTime(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            }) + ' ' + date.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        async function fetchAppointments() {
+            const list = document.getElementById("queueList");
+            try {
+                const response = await fetch("/api/v1/doctor/appointments", {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                
+                if (!response.ok) throw new Error("Could not load appointments.");
+                const data = await response.json();
+                
+                // Count active
+                const activeAppts = data.filter(a => a.status === "Scheduled" || a.status === "Pending");
+                document.getElementById("queueCount").innerText = activeAppts.length;
+
+                list.innerHTML = "";
+                if (data.length === 0) {
+                    list.innerHTML = `<tr><td colspan="8" class="text-center text-muted">No appointments found in your queue.</td></tr>`;
+                    return;
+                }
+
+                data.forEach(a => {
+                    const tr = document.createElement("tr");
+                    
+                    const age = calculateAge(a.patient.dob);
+                    const genderChar = a.patient.gender === "Male" ? "M" : (a.patient.gender === "Female" ? "F" : "O");
+                    
+                    let statusBadge = `<span class="badge badge-scheduled">${a.status}</span>`;
+                    if (a.status === "Completed") statusBadge = `<span class="badge badge-completed">Completed</span>`;
+                    else if (a.status === "Cancelled") statusBadge = `<span class="badge badge-danger">Cancelled</span>`;
+
+                    let actionButton = "";
+                    if (a.status === "Scheduled" || a.status === "Pending") {
+                        actionButton = `
+                            <button onclick="completeAppointment(${a.appt_id})" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                                ✓ Complete
+                            </button>
+                        `;
+                    } else {
+                        actionButton = `<span class="text-muted">-</span>`;
+                    }
+
+                    tr.innerHTML = `
+                        <td style="font-weight:600;">${a.patient.pat_name}</td>
+                        <td>${age} yrs / ${genderChar}</td>
+                        <td>${a.patient.contact}</td>
+                        <td style="color:${a.patient.allergies && a.patient.allergies !== 'None' ? '#721c24' : 'inherit'}; font-weight:${a.patient.allergies && a.patient.allergies !== 'None' ? '600' : 'normal'}">
+                            ${a.patient.allergies || 'None'}
+                        </td>
+                        <td>${formatDateTime(a.date_time)}</td>
+                        <td>
+                            <strong style="color:var(--accent); text-transform:uppercase;">${a.test_type === 'none' ? 'Consult' : a.test_type}</strong>
+                            <div style="font-size:0.8rem; color:#7b6f80;">${a.reason || 'No details'}</div>
+                        </td>
+                        <td>${statusBadge}</td>
+                        <td>${actionButton}</td>
+                    `;
+                    list.appendChild(tr);
+                });
+
+            } catch (err) {
+                console.error(err);
+                list.innerHTML = `<tr><td colspan="8" class="text-center text-muted">Error loading queue.</td></tr>`;
+            }
+        }
+
+        async function completeAppointment(apptId) {
+            if (!confirm("Are you sure you want to mark this appointment as Completed/Done?")) return;
+
+            try {
+                const response = await fetch(`/api/v1/doctor/appointments/${apptId}/complete`, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error("Could not update status.");
+                
+                alert("Appointment completed successfully.");
+                fetchAppointments();
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", fetchAppointments);
+    </script>
+</body>
+</html>

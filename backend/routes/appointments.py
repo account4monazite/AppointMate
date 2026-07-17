@@ -62,7 +62,6 @@ async def book_appt(
 
 @router.post("/bookTest/{doc_id}")
 async def book_test(doc_id:int,
-        test_type:str, 
         data:AppointmentRequest,
         db:Session=Depends(get_db),
         current_user=Depends(get_current_user)):
@@ -82,7 +81,6 @@ async def book_test(doc_id:int,
         raise HTTPException(status_code=400, detail="Slot not available")
 
     now = datetime.now()
-    test_type = test_type.strip("'\"")
     test_data = data.model_dump()
     test_data["patient_id"] = patient.patient_id
     

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AppointMate - Healthcare Booking System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="homepage">
+    
+    <nav class="navbar">
+        <a href="index.html" class="logo">Appoint<span>Mate</span></a>
+        <div class="nav-links" id="navLinks">
+            <!-- Dynamic links based on authentication will go here -->
+            <a href="login.html" class="btn btn-secondary">Login</a>
+            <a href="signup.html" class="btn btn-primary">Sign Up</a>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <canvas id="bend" resize></canvas>
+        <span class="wave-text"></span>
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title">Your Health, <span>Simplified</span></h1>
+                <p class="hero-description">
+                    Book appointments with premium specialists and schedule diagnostic tests instantly. 
+                    Manage your prescriptions and healthcare history in one secure, modern dashboard.
+                </p>
+                <div class="hero-buttons" id="heroButtons">
+                    <a href="signup.html" class="btn btn-primary btn-large">Get Started Now</a>
+                    <a href="login.html" class="btn btn-outline btn-large">Patient Portal</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <footer style="text-align: center; padding: 2rem; border-top: 1px solid rgba(74, 14, 78, 0.1); background-color: var(--white); font-size: 0.9rem;">
+        <p>&copy; Appointmate by Shriya</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.15/paper-full.min.js"></script>
+    <script>
+        // Check login status to update nav and buttons
+        document.addEventListener("DOMContentLoaded", () => {
+            const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+            const role = localStorage.getItem("role") || sessionStorage.getItem("role");
+            
+            if (token && role) {
+                const navLinks = document.getElementById("navLinks");
+                const heroButtons = document.getElementById("heroButtons");
+                
+                let dashboardUrl = "dashboard.html";
+                if (role === "doctor") {
+                    dashboardUrl = "doctor_dashboard.html";
+                } else if (role === "admin") {
+                    dashboardUrl = "admin_dashboard.html";
+                }
+                
+                navLinks.innerHTML = `
+                    <a href="${dashboardUrl}" class="btn btn-secondary">Dashboard</a>
+                    <button onclick="logout()" class="btn btn-outline">Logout</button>
+                `;
+                
+                heroButtons.innerHTML = `
+                    <a href="${dashboardUrl}" class="btn btn-primary btn-large">Go to Dashboard</a>
+                `;
+            }
+
+            const canvas = document.getElementById("bend");
+            paper.install(window);
+            paper.setup(canvas);
+
+            let h = window.innerHeight,
+                w = window.innerWidth,
+                horizon = h / 2,
+                pathCounts = 13,
+                pathPoints = 15,
+                strokeWidth = 2,
+                strokeColor = '#DA70D6',
+                fillColor = 'rgba(218, 112, 214, 0.18)',
+                speed = 1.6,
+                offset = 7,
+                frequency = [0, -30, 50, -50, -35, 35, 0, -30, 50, -50, -35, 35, -30, 50, -50, -35, 35],
+                delay = 0.9,
+                mousePos = view.center / 2,
+                path = [];
+
+            initializePath();
+
+            function initializePath() {
+                h = window.innerHeight;
+                w = window.innerWidth;
+                horizon = h / 2;
+                paper.project.activeLayer.removeChildren();
+                path = [];
+
+                for (let i = 0; i < pathCounts; i++) {
+                    path[i] = new paper.Path();
+
+                    path[i].add(new paper.Point(-10, h));
+                    path[i].add(new paper.Point(-10, horizon));
+
+                    for (let p = 0; p < pathPoints - 1; p++) {
+                        path[i].add(new paper.Point((w / (pathPoints - 1) * p) + p, horizon + frequency[p]));
+                    }
+                    
+                    path[i].add(new paper.Point(w + 10, horizon));
+                    path[i].add(new paper.Point(w + 10, h));
+
+                    path[i].strokeWidth = strokeWidth;
+                    path[i].strokeColor = strokeColor;
+                    
+                    if (i === 0) {
+                        path[i].fillColor = 'rgba(255, 255, 255, 1)';
+                    }
+                    
+                    path[i].smooth();
+                }
+            }
+
+            view.onFrame = function(event) {
+                for (let p = 0; p < pathCounts; p++) {
+                    for (let s = 0; s < pathPoints; s++) {
+                        const value = (s % 2) ? -1 : 1;
+                        const segment = path[p].segments[2 + s];
+                        segment.point.y = horizon + ((Math.sin((event.time + s * delay) * speed)) * (frequency[s] * value + (p * offset * value)));
+                    }
+                }
+            };
+
+            window.addEventListener("resize", initializePath);
+        });
+
+        function logout() {
+            if (confirm("Are you sure you want to log out?")) {
+                localStorage.removeItem("token");
+                localStorage.removeItem("role");
+                sessionStorage.removeItem("token");
+                sessionStorage.removeItem("role");
+                window.location.reload();
+            }
+        }
+    </script>
+</body>
+</html>

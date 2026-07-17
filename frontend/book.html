@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Service - AppointMate</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="logo">Appoint<span>Mate</span></a>
+        <div class="nav-links">
+            <a href="dashboard.html" class="btn btn-secondary">Dashboard</a>
+            <button onclick="logout()" class="btn btn-outline">Logout</button>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="dashboard-header mt-4">
+            <div>
+                <a href="dashboard.html" style="text-decoration: none; color: var(--primary-text); font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    ← Back to Dashboard
+                </a>
+                <h1>Schedule Healthcare Service</h1>
+                <p class="text-muted">Choose your preferred doctor, test type, and slot</p>
+            </div>
+        </div>
+
+        <div class="booking-grid">
+            <!-- Form Card -->
+            <div class="card">
+                <div class="alert alert-danger" id="errorMessage"></div>
+                <div class="alert alert-success" id="successMessage"></div>
+
+                <form id="bookingForm">
+                    <!-- Toggle booking type -->
+                    <div class="form-group">
+                        <label>Booking Type</label>
+                        <div class="form-row" style="margin-top: 0.25rem;">
+                            <label class="btn btn-secondary" id="typeApptLabel" style="border: 2px solid var(--accent); cursor: pointer; text-align: center;">
+                                <input type="radio" name="bookingType" value="appointment" checked style="display:none;" onchange="toggleBookingType()">
+                                🩺 Doctor Appointment
+                            </label>
+                            <label class="btn btn-secondary" id="typeTestLabel" style="border: 2px solid transparent; cursor: pointer; text-align: center;">
+                                <input type="radio" name="bookingType" value="test" style="display:none;" onchange="toggleBookingType()">
+                                🔬 Diagnostic Test
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Doctor Selection (always needed since tests also require doc assignment in backend schema) -->
+                    <div class="form-group" id="doctorGroup">
+                        <label for="doctorSelect">Select Specialist / Medical Practitioner *</label>
+                        <select id="doctorSelect" class="form-control" required onchange="resetSlots()">
+                            <option value="">--Loading Doctors--</option>
+                        </select>
+                    </div>
+
+                    <!-- Test Type Selection (only shown for Test) -->
+                    <div class="form-group" id="testGroup" style="display: none;">
+                        <label for="testSelect">Select Diagnostic Test *</label>
+                        <select id="testSelect" class="form-control">
+                            <option value="">--Select Test--</option>
+                            <option value="CT">CT Scan</option>
+                            <option value="MRI">MRI Scan</option>
+                            <option value="XRAY">X-Ray</option>
+                        </select>
+                    </div>
+
+                    <!-- Date Selection -->
+                    <div class="form-group">
+                        <label for="bookingDate">Select Date *</label>
+                        <input type="date" id="bookingDate" class="form-control" required onchange="fetchSlots()">
+                    </div>
+
+                    <!-- Reason for Visit -->
+                    <div class="form-group">
+                        <label for="reason">Reason / Symptoms *</label>
+                        <textarea id="reason" class="form-control" rows="3" placeholder="Briefly describe your symptoms or booking reasons" required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mt-4" id="submitBtn">Confirm Booking</button>
+                </form>
+            </div>
+
+            <!-- Slots Card -->
+            <div class="card" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <h3 style="border-bottom: 1.5px solid var(--accent); padding-bottom: 0.5rem;">Available Time Slots</h3>
+                <p class="text-muted" id="slotsInstruction">Please select a doctor and date first to view available timings.</p>
+                <div class="slot-grid" id="slotsContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+        const role = localStorage.getItem("role") || sessionStorage.getItem("role");
+
+        if (!token || role !== "patient") {
+            logout();
+        }
+
+        function logout() {
+            localStorage.removeItem("token");
+            localStorage.removeItem("role");
+            sessionStorage.removeItem("token");
+            sessionStorage.removeItem("role");
+            window.location.href = "login.html";
+        }
+
+        let doctorsList = [];
+        let selectedSlot = null;
+
+        // Load doctors on init
+        async function loadDoctors() {
+            try {
+                const response = await fetch("/api/v1/doctors", {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error("Could not load doctor list.");
+                doctorsList = await response.json();
+                
+                const select = document.getElementById("doctorSelect");
+                select.innerHTML = '<option value="">--Choose Specialist--</option>';
+                doctorsList.forEach(d => {
+                    const opt = document.createElement("option");
+                    opt.value = d.doc_id;
+                    opt.innerText = `${d.doc_name} (${d.specialization})`;
+                    select.appendChild(opt);
+                });
+            } catch (err) {
+                console.error(err);
+                document.getElementById("doctorSelect").innerHTML = '<option value="">Error loading doctors</option>';
+            }
+        }
+
+        function toggleBookingType() {
+            const bookingType = document.querySelector('input[name="bookingType"]:checked').value;
+            const testGroup = document.getElementById("testGroup");
+            const testSelect = document.getElementById("testSelect");
+            
+            const apptLabel = document.getElementById("typeApptLabel");
+            const testLabel = document.getElementById("typeTestLabel");
+
+            if (bookingType === "test") {
+                testGroup.style.display = "block";
+                testSelect.required = true;
+                apptLabel.style.borderColor = "transparent";
+                testLabel.style.borderColor = "var(--accent)";
+            } else {
+                testGroup.style.display = "none";
+                testSelect.required = false;
+                testSelect.value = "";
+                apptLabel.style.borderColor = "var(--accent)";
+                testLabel.style.borderColor = "transparent";
+            }
+            resetSlots();
+        }
+
+        function resetSlots() {
+            selectedSlot = null;
+            document.getElementById("slotsContainer").innerHTML = "";
+            document.getElementById("slotsInstruction").innerText = "Please select a doctor and date first to view available timings.";
+        }
+
+        // Fetch available slots from backend
+        async function fetchSlots() {
+            const docId = document.getElementById("doctorSelect").value;
+            const date = document.getElementById("bookingDate").value;
+            const container = document.getElementById("slotsContainer");
+            const instruction = document.getElementById("slotsInstruction");
+
+            if (!docId || !date) {
+                resetSlots();
+                return;
+            }
+
+            // Ensure date is not in the past
+            const today = new Date().toISOString().split('T')[0];
+            if (date < today) {
+                instruction.innerText = "Cannot book slots in the past.";
+                container.innerHTML = "";
+                return;
+            }
+
+            instruction.innerText = "Fetching slots...";
+            container.innerHTML = "";
+            selectedSlot = null;
+
+            try {
+                const response = await fetch(`/api/v1/doctors/${docId}/available-slots?date=${date}`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error("Could not fetch slots.");
+                const data = await response.json();
+                
+                container.innerHTML = "";
+                if (data.available_slots.length === 0) {
+                    instruction.innerText = "No available slots for this doctor on selected date.";
+                    container.innerHTML = '<div class="no-slots-msg">No slots available. Try another date or doctor.</div>';
+                    return;
+                }
+
+                instruction.innerText = "Select a time slot:";
+                data.available_slots.forEach(slotIso => {
+                    const slotDate = new Date(slotIso);
+                    const timeStr = slotDate.toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    
+                    const btn = document.createElement("button");
+                    btn.type = "button";
+                    btn.className = "slot-btn";
+                    btn.innerText = timeStr;
+                    btn.onclick = () => {
+                        const btns = container.querySelectorAll(".slot-btn");
+                        btns.forEach(b => b.classList.remove("selected"));
+                        btn.classList.add("selected");
+                        selectedSlot = slotIso;
+                    };
+                    container.appendChild(btn);
+                });
+
+            } catch (err) {
+                console.error(err);
+                instruction.innerText = "Error loading slots.";
+            }
+        }
+
+        // Handle form submission
+        document.getElementById("bookingForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            const errorDiv = document.getElementById("errorMessage");
+            const successDiv = document.getElementById("successMessage");
+            const submitBtn = document.getElementById("submitBtn");
+
+            errorDiv.style.display = "none";
+            successDiv.style.display = "none";
+
+            const bookingType = document.querySelector('input[name="bookingType"]:checked').value;
+            const docId = document.getElementById("doctorSelect").value;
+            const reason = document.getElementById("reason").value.trim();
+
+            if (!docId) {
+                errorDiv.innerText = "Please select a doctor.";
+                errorDiv.style.display = "block";
+                return;
+            }
+
+            if (!selectedSlot) {
+                errorDiv.innerText = "Please select an available time slot from the list.";
+                errorDiv.style.display = "block";
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Booking in progress...";
+
+            try {
+                let url, body;
+                if (bookingType === "appointment") {
+                    url = `/api/v1/bookAppointment/${docId}`;
+                    body = {
+                        doc_id: parseInt(docId),
+                        date_time: selectedSlot,
+                        test_type: "none",
+                        reason: reason
+                    };
+                } else {
+                    const testType = document.getElementById("testSelect").value;
+                    url = `/api/v1/bookTest/${docId}`;
+                    body = {
+                        doc_id: parseInt(docId),
+                        date_time: selectedSlot,
+                        test_type: testType,
+                        reason: reason
+                    };
+                }
+
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify(body)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || "Slot conflict or booking error. Please select another slot.");
+                }
+
+                successDiv.innerText = "Booking Completed Successfully!";
+                successDiv.style.display = "block";
+
+                // Save appointment details in sessionStorage to show in done.html
+                sessionStorage.setItem("lastBookingType", bookingType);
+                sessionStorage.setItem("lastBookingTime", selectedSlot);
+                
+                const doctorName = document.getElementById("doctorSelect").options[document.getElementById("doctorSelect").selectedIndex].text;
+                sessionStorage.setItem("lastBookingDoc", doctorName);
+
+                setTimeout(() => {
+                    window.location.href = "done.html";
+                }, 1200);
+
+            } catch (err) {
+                errorDiv.innerText = err.message;
+                errorDiv.style.display = "block";
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Confirm Booking";
+                // Refresh slots in case the conflict was due to another user booking
+                fetchSlots();
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // Set min date of picker to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById("bookingDate").min = today;
+            loadDoctors();
+        });
+    </script>
+</body>
+</html>

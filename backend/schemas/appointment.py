@@ -20,6 +20,7 @@ class AppointmentResponse(BaseModel):
     date_time:datetime
     doc_name:str
     test_type:Tests
+    reason: Optional[str] = None
     class Config:
         from_attributes=True
 
@@ -47,6 +48,7 @@ class AppointmentRequest(BaseModel):
     patient_id:Optional[int] = None
     date_time:datetime
     test_type:Tests
+    reason: Optional[str] = None
     
 
 class TestRequest(BaseModel):
@@ -54,8 +56,8 @@ class TestRequest(BaseModel):
     patient_id:Optional[int] = None
     date_time:datetime
     test_type:Tests
+    reason: Optional[str] = None
 
 class AppointmentUpdate(BaseModel):
     doc_id:int
     date_time:datetime
-    

@@ -1,12 +1,16 @@
 from sqlalchemy import Column, Integer, String, DateTime, Date, Enum, ForeignKey, TIMESTAMP,UniqueConstraint
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 from sqlalchemy.sql import func
 from database import Base
 import enum
+from datetime import datetime
+
+from typing import Optional
 
 class UserRole(str, enum.Enum):
     patient = "patient"
     doctor = "doctor"
+    admin = "admin"
     
 class GenderEnum(str, enum.Enum):
     Male = "Male"
@@ -63,11 +67,12 @@ class DoctorContact(Base):
 class Patient(Base):
     __tablename__ = "patient"
 
-    patient_id = Column(Integer, primary_key=True, index=True)
-    pat_name = Column(String(100), nullable=False)
-    dob = Column(DateTime, nullable=False)
-    gender = Column(Enum(GenderEnum), nullable=False)
-    contact = Column(String(150), nullable=False)
+    patient_id: Mapped[int] = mapped_column(primary_key=True)
+    pat_name: Mapped[str] = mapped_column(String)
+    dob: Mapped[datetime] = mapped_column(DateTime)
+    gender: Mapped[str] = mapped_column(String)
+    contact: Mapped[str] = mapped_column(String)
+    allergies: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
     user_id = Column(Integer, ForeignKey("users.user_id"), unique=True)
 
@@ -90,6 +95,7 @@ class AppointmentTest(Base):
     date_time = Column(DateTime)
     test_type = Column(Enum(TestTypeEnum))
     status = Column(Enum(AppointmentStatus),default='Scheduled')
+    reason = Column(String(255), nullable=True)
 
     doc_id = Column(Integer, ForeignKey("doctor.doc_id"))
     patient_id = Column(Integer, ForeignKey("patient.patient_id"))

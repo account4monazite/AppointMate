@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Dashboard - AppointMate</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="logo">Appoint<span>Mate</span></a>
+        <div class="nav-links">
+            <a href="book.html" class="btn btn-primary">Book Doctor/Test</a>
+            <button onclick="logout()" class="btn btn-outline">Logout</button>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="dashboard-header mt-4">
+            <div>
+                <h1 id="welcomeMessage">Welcome back!</h1>
+                <p id="patientAllergies" class="text-muted" style="margin-top: 0.25rem;">Allergies: Loading...</p>
+            </div>
+            <div>
+                <a href="book.html" class="btn btn-primary">Book Appointment or Test</a>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📅</div>
+                <div class="stat-info">
+                    <h4>Upcoming Appointments</h4>
+                    <p id="apptCount">0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🔬</div>
+                <div class="stat-info">
+                    <h4>Upcoming Tests</h4>
+                    <p id="testCount">0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">💊</div>
+                <div class="stat-info">
+                    <h4>Active Prescriptions</h4>
+                    <p id="prescriptionCount">0</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-container">
+            <div class="tab-headers">
+                <button class="tab-btn active" onclick="switchTab(event, 'appointmentsTab')">Appointments</button>
+                <button class="tab-btn" onclick="switchTab(event, 'testsTab')">Diagnostic Tests</button>
+                <button class="tab-btn" onclick="switchTab(event, 'prescriptionsTab')">Prescriptions</button>
+            </div>
+        </div>
+
+        <!-- Appointments Tab -->
+        <div id="appointmentsTab" class="tab-content active">
+            <div class="data-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Doctor Name</th>
+                            <th>Date & Time</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="appointmentsList">
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">Loading appointments...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tests Tab -->
+        <div id="testsTab" class="tab-content">
+            <div class="data-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Test Type</th>
+                            <th>Assigned Doctor</th>
+                            <th>Date & Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="testsList">
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">Loading tests...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Prescriptions Tab -->
+        <div id="prescriptionsTab" class="tab-content">
+            <div class="stats-grid" id="prescriptionsList">
+                <div class="text-center text-muted w-100" style="grid-column: 1/-1;">Loading prescriptions...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check Auth
+        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+        const role = localStorage.getItem("role") || sessionStorage.getItem("role");
+
+        if (!token || role !== "patient") {
+            logout();
+        }
+
+        function logout() {
+            localStorage.removeItem("token");
+            localStorage.removeItem("role");
+            sessionStorage.removeItem("token");
+            sessionStorage.removeItem("role");
+            window.location.href = "login.html";
+        }
+
+        function switchTab(evt, tabName) {
+            const contents = document.querySelectorAll(".tab-content");
+            contents.forEach(c => c.classList.remove("active"));
+            
+            const buttons = document.querySelectorAll(".tab-btn");
+            buttons.forEach(b => b.classList.remove("active"));
+
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+
+        // Format dates
+        function formatDateTime(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleDateString('en-US', { 
+                weekday: 'short', 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            }) + ' at ' + date.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        }
+
+        // Fetch Dashboard Data
+        async function fetchDashboard() {
+            try {
+                // Fetch profile first
+                const profileRes = await fetch("/api/v1/patient/profile", {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                
+                if (profileRes.status === 404) {
+                    window.location.href = "profile.html";
+                    return;
+                } else if (!profileRes.ok) {
+                    throw new Error("Could not load profile.");
+                }
+                const profileData = await profileRes.json();
+                document.getElementById("welcomeMessage").innerText = `Welcome back, ${profileData.pat_name}!`;
+                document.getElementById("patientAllergies").innerText = `Known Allergies: ${profileData.allergies || "None"}`;
+
+                // Fetch appointments, tests, prescriptions
+                const dashboardRes = await fetch("/api/v1/dashboard/dashboard", {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (!dashboardRes.ok) throw new Error("Could not load dashboard data.");
+                const data = await dashboardRes.json();
+
+                // 1. Fill stats
+                document.getElementById("apptCount").innerText = data.number_current_appts;
+                document.getElementById("testCount").innerText = data.number_current_tests;
+                document.getElementById("prescriptionCount").innerText = data.prescription ? data.prescription.length : 0;
+
+                // 2. Fill appointments
+                const apptsList = document.getElementById("appointmentsList");
+                apptsList.innerHTML = "";
+                if (data.current_appointments.length === 0) {
+                    apptsList.innerHTML = `<tr><td colspan="4" class="text-center text-muted">No upcoming appointments.</td></tr>`;
+                } else {
+                    data.current_appointments.forEach(a => {
+                        const tr = document.createElement("tr");
+                        tr.innerHTML = `
+                            <td style="font-weight:600;">${a.doc_name || "Doctor"}</td>
+                            <td>${formatDateTime(a.date_time)}</td>
+                            <td>${a.reason || "General checkup"}</td>
+                            <td><span class="badge badge-scheduled">Scheduled</span></td>
+                        `;
+                        apptsList.appendChild(tr);
+                    });
+                }
+
+                // 3. Fill tests
+                const testsList = document.getElementById("testsList");
+                testsList.innerHTML = "";
+                if (data.current_tests.length === 0) {
+                    testsList.innerHTML = `<tr><td colspan="4" class="text-center text-muted">No diagnostic tests scheduled.</td></tr>`;
+                } else {
+                    data.current_tests.forEach(t => {
+                        const tr = document.createElement("tr");
+                        tr.innerHTML = `
+                            <td style="font-weight:600;"><span class="badge badge-scheduled">${t.test_type}</span></td>
+                            <td>${t.doc_name || "Assigned Specialist"}</td>
+                            <td>${formatDateTime(t.date_time)}</td>
+                            <td><span class="badge badge-scheduled">Scheduled</span></td>
+                        `;
+                        testsList.appendChild(tr);
+                    });
+                }
+
+                // 4. Fill prescriptions
+                const prescriptionsList = document.getElementById("prescriptionsList");
+                prescriptionsList.innerHTML = "";
+                if (!data.prescription || data.prescription.length === 0) {
+                    prescriptionsList.innerHTML = `<div class="text-center text-muted w-100" style="grid-column: 1/-1; padding: 2rem;">No active prescriptions.</div>`;
+                } else {
+                    data.prescription.forEach(p => {
+                        const card = document.createElement("div");
+                        card.className = "card";
+                        card.style.display = "flex";
+                        card.style.flexDirection = "column";
+                        card.style.gap = "0.75rem";
+                        
+                        let itemsHtml = "";
+                        p.items.forEach(item => {
+                            itemsHtml += `
+                                <div style="display:flex; justify-content:space-between; padding: 0.5rem 0; border-bottom:1px solid rgba(74,14,78,0.05);">
+                                    <span style="font-weight:600;">💊 ${item.medication}</span>
+                                    <span class="text-muted">${item.dose}</span>
+                                </div>
+                            `;
+                        });
+
+                        card.innerHTML = `
+                            <h3 style="font-size:1.1rem; border-bottom:1.5px solid var(--accent); padding-bottom:0.5rem; margin-bottom:0.5rem;">
+                                Prescription (Appt ID: ${p.appt_id})
+                            </h3>
+                            <div>${itemsHtml}</div>
+                        `;
+                        prescriptionsList.appendChild(card);
+                    });
+                }
+
+            } catch (err) {
+                console.error(err);
+                alert("Error loading dashboard data. Please log in again.");
+                logout();
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", fetchDashboard);
+    </script>
+</body>
+</html>

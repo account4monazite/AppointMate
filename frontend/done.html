@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Done - AppointMate</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- html2pdf.js CDN library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body style="background: radial-gradient(circle at 10% 20%, rgba(218, 112, 214, 0.08) 0%, rgba(230, 230, 250, 0) 90%); min-height: 100vh; display: flex; align-items: center; justify-content: center;">
+    
+    <div class="card success-container" style="max-width: 600px; width: 100%;">
+        <div class="success-icon">✓</div>
+        <h2>Booking Confirmed!</h2>
+        <p class="text-muted mb-4">Your healthcare schedule has been recorded successfully.</p>
+
+        <!-- Receipt Area (this will be exported to PDF) -->
+        <div id="receiptArea" style="background-color: var(--neutral); border-radius: var(--border-radius); padding: 1.5rem; text-align: left; margin-bottom: 2rem; border: 1.5px dashed rgba(74, 14, 78, 0.2);">
+            <h3 style="text-align: center; margin-bottom: 1rem; color: var(--primary-text); font-size: 1.2rem;">
+                Wings Clinic - AppointMate Receipt
+            </h3>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.95rem;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span class="text-muted">Booking Type:</span>
+                    <strong id="recType" style="text-transform: capitalize;">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span class="text-muted">Assigned Doctor:</span>
+                    <strong id="recDoc">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span class="text-muted">Date & Time:</span>
+                    <strong id="recTime">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span class="text-muted">Status:</span>
+                    <span class="badge badge-completed">Confirmed</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <button onclick="downloadPDF()" class="btn btn-outline w-100">
+                📥 Download PDF Receipt
+            </button>
+            <a href="dashboard.html" class="btn btn-primary w-100">
+                Go to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Check Auth
+        const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+        if (!token) {
+            window.location.href = "login.html";
+        }
+
+        // Load details from sessionStorage
+        document.addEventListener("DOMContentLoaded", () => {
+            const lastType = sessionStorage.getItem("lastBookingType") || "Appointment";
+            const lastTime = sessionStorage.getItem("lastBookingTime");
+            const lastDoc = sessionStorage.getItem("lastBookingDoc") || "General Specialist";
+
+            document.getElementById("recType").innerText = lastType;
+            document.getElementById("recDoc").innerText = lastDoc;
+            
+            if (lastTime) {
+                const date = new Date(lastTime);
+                document.getElementById("recTime").innerText = date.toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                }) + ' at ' + date.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } else {
+                document.getElementById("recTime").innerText = "Not specified";
+            }
+        });
+
+        // Export PDF using html2pdf
+        function downloadPDF() {
+            const element = document.getElementById("receiptArea");
+            const opt = {
+                margin:       10,
+                filename:     'appointmate_receipt.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            html2pdf().from(element).set(opt).save();
+        }
+    </script>
+</body>
+</html>

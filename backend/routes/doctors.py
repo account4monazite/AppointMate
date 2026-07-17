@@ -38,3 +38,15 @@ def get_available_slots(doc_id: int, date: str, db: Session = Depends(get_db)):
         "date": date,
         "available_slots": available_slots
     }
+
+@router.get("/doctors")
+def list_doctors(db: Session = Depends(get_db)):
+    doctors = db.query(models.Doctor).all()
+    return [
+        {
+            "doc_id": d.doc_id,
+            "doc_name": d.doc_name,
+            "specialization": d.specialization,
+            "contact": d.contact
+        } for d in doctors
+    ]
